@@ -27,13 +27,12 @@ class ChatQuestionCommand extends Command
             ->trim()
             ->value();
 
-        dump($query);
+//        dump($query);
 
         $result = null;
         try {
             eval($query); # dont judge 😜
         } catch (Exception $e) {
-            $this->comment($e->getMessage());
             $this->error('Cant query the results. Try again with more specific and understandable question.');
             return 1;
         }
