@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use OpenAI;
@@ -29,10 +30,16 @@ class ChatQuestionCommand extends Command
         dump($query);
 
         $result = null;
-        eval($query); # dont judge 😜
+        try {
+            eval($query); # dont judge 😜
+        } catch (Exception $e) {
+            $this->comment($e->getMessage());
+            $this->error('Cant query the results. Try again with more specific and understandable question.');
+            return 1;
+        }
 
         if($result === null) {
-            $this->error('Result not found');
+            $this->info('Result not found');
             return 1;
         }
 
@@ -46,9 +53,6 @@ class ChatQuestionCommand extends Command
             ->create($this->prompt($this->baseAnswerInstruction($result, $question)));
 
         $this->warn($response->choices[0]->text);
-
-        $this->handle();
-
         return 0;
     }
 
@@ -79,7 +83,7 @@ class ChatQuestionCommand extends Command
             Use class name with namespace.
             Dont select column that sensitive to user privacy such as id, password, etc.
             If joining table, use join instead of with().
-            If there is ambiguous column, use table name as prefix.
+            When use select(), use table prefix for each column.
 
             The question must follow this rules:
             1. Action related with create, update or delete are not allowed.
